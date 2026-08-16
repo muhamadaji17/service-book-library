@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String     @id @default(uuid())
+  name        String
+  email       String     @unique
+  password    String
+  readingGoal Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userBooks   UserBook[]
+}
+
+model Book {
+  id            String     @id @default(uuid())
+  isbn          String?    @unique
+  title         String
+  author        String
+  coverUrl      String?
+  publisher     String?
+  publishedYear Int?
+  pageCount     Int?
+  description   String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  userBooks     UserBook[]
+}
+
+model UserBook {
+  id               String           @id @default(uuid())
+  userId           String
+  bookId           String
+  status           String           @default("WANT_TO_READ")
+  startDate        DateTime?
+  targetFinishDate DateTime?
+  finishDate       DateTime?
+  currentPage      Int              @default(0)
+  progress         Float            @default(0)
+  rating           Int?
+  summary          String?
+  lessons          String?
+  favoriteQuote    String?
+  personalOpinion  String?
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book             Book             @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readingSessions  ReadingSession[]
+
+  @@unique([userId, bookId])
+}
+
+model ReadingSession {
+  id              String   @id @default(uuid())
+  userBookId      String
+  readingDate     DateTime @default(now())
+  pagesRead       Int      @default(0)
+  durationMinutes Int      @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  userBook        UserBook @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+}
